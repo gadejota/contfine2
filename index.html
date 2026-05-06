@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Contabilidade Financeira II — Laboratório de Arrendamento</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=Manrope:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #f7f1e3;
+    --paper-2: #efe7d2;
+    --ink: #1c1a17;
+    --ink-soft: #4a443c;
+    --ink-faint: #8a8073;
+    --rule: #d8cdb3;
+    --rule-strong: #b8a980;
+    --green: #2d5a3f;
+    --green-soft: #5b8a6c;
+    --green-bg: #d9e4d9;
+    --red: #963b2a;
+    --red-bg: #f0d4cc;
+    --gold: #b8923f;
+    --gold-soft: #d4b46a;
+    --shadow: 0 1px 0 rgba(28,26,23,.06), 0 8px 24px -12px rgba(28,26,23,.18);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { background: var(--paper); color: var(--ink); }
+  body {
+    font-family: 'Manrope', sans-serif;
+    font-size: 15px;
+    line-height: 1.55;
+    background-image:
+      radial-gradient(circle at 20% 10%, rgba(184,146,63,.05), transparent 40%),
+      radial-gradient(circle at 80% 80%, rgba(45,90,63,.04), transparent 40%);
+    min-height: 100vh;
+  }
+  h1, h2, h3, h4 { font-family: 'Fraunces', serif; font-weight: 500; letter-spacing: -0.01em; }
+  h1 { font-size: clamp(2rem, 4vw, 3.4rem); line-height: 1.05; }
+  h2 { font-size: 1.85rem; line-height: 1.15; margin: 2rem 0 .8rem; }
+  h3 { font-size: 1.3rem; margin: 1.4rem 0 .6rem; }
+  h4 { font-size: 1.05rem; font-weight: 600; margin: 1rem 0 .4rem; font-family: 'Manrope', sans-serif; letter-spacing: .04em; text-transform: uppercase; color: var(--ink-soft); font-size: .82rem; }
+  p { margin: .6rem 0; }
+  a { color: var(--green); }
+  .num { font-family: 'JetBrains Mono', monospace; font-variant-numeric: tabular-nums; }
+
+  /* Header */
+  header.top {
+    border-bottom: 1px solid var(--rule);
+    background: linear-gradient(to bottom, rgba(247,241,227,.95), rgba(247,241,227,.85));
+    backdrop-filter: blur(6px);
+    position: sticky; top: 0; z-index: 50;
+  }
+  .top-inner {
+    max-width: 1280px; margin: 0 auto; padding: 1rem 1.5rem;
+    display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+  }
+  .brand {
+    display: flex; align-items: baseline; gap: .8rem;
+    font-family: 'Fraunces', serif; font-weight: 600; font-size: 1.25rem;
+  }
+  .brand .glyph { color: var(--gold); font-size: 1.4rem; }
+  .brand .meta { font-family: 'Manrope', sans-serif; font-size: .72rem; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-faint); font-weight: 600; }
+  nav.tabs { display: flex; gap: 0; border: 1px solid var(--rule-strong); border-radius: 999px; padding: 3px; background: var(--paper-2); }
+  nav.tabs button {
+    border: 0; background: transparent; padding: .45rem 1rem;
+    font-family: inherit; font-size: .85rem; font-weight: 600; letter-spacing: .02em;
+    border-radius: 999px; cursor: pointer; color: var(--ink-soft);
+    transition: all .25s ease;
+  }
+  nav.tabs button.active { background: var(--ink); color: var(--paper); }
+  nav.tabs button:hover:not(.active) { color: var(--ink); }
+
+  /* Layout */
+  main { max-width: 1280px; margin: 0 auto; padding: 2rem 1.5rem 5rem; }
+  .hero {
+    padding: 2rem 0 3rem;
+    border-bottom: 1px dashed var(--rule);
+    margin-bottom: 2rem;
+    display: grid; grid-template-columns: 1.4fr 1fr; gap: 3rem; align-items: end;
+  }
+  @media (max-width: 800px) { .hero { grid-template-columns: 1fr; gap: 1.5rem; } }
+  .hero .kicker {
+    font-size: .75rem; letter-spacing: .25em; text-transform: uppercase;
+    color: var(--gold); font-weight: 700; margin-bottom: .8rem;
+  }
+  .hero h1 em { font-style: italic; color: var(--green); }
+  .hero p.lead { font-size: 1.1rem; color: var(--ink-soft); max-width: 36rem; margin-top: 1rem; }
+  .hero .stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; }
+  .hero .stat {
+    border-left: 2px solid var(--rule-strong);
+    padding: .2rem 0 .2rem 1rem;
+  }
+  .hero .stat .num-big { font-family: 'Fraunces', serif; font-size: 2rem; line-height: 1; color: var(--ink); }
+  .hero .stat .label { font-size: .72rem; letter-spacing: .15em; text-transform: uppercase; color: var(--ink-faint); margin-top: .3rem; font-weight: 600; }
+
+  /* Section labels — like a textbook */
+  .section-label {
+    display: inline-flex; align-items: center; gap: .8rem;
+    font-size: .75rem; letter-spacing: .2em; text-transform: uppercase; color: var(--ink-faint);
+    font-weight: 700; margin-bottom: .4rem;
+  }
+  .section-label .roman { font-family: 'Fraunces', serif; font-size: 1.4rem; color: var(--gold); letter-spacing: 0; font-style: italic; }
+
+  /* Variation picker */
+  .picker {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 1rem; margin: 1.2rem 0 2.5rem;
+  }
+  .picker .card {
+    background: var(--paper-2); border: 1px solid var(--rule);
+    padding: 1.1rem 1.2rem; border-radius: 4px; cursor: pointer;
+    transition: all .2s ease; position: relative;
+  }
+  .picker .card:hover { border-color: var(--ink); transform: translateY(-2px); box-shadow: var(--shadow); }
+  .picker .card.active { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+  .picker .card.active .card-tag { color: var(--gold-soft); }
+  .picker .card.active .card-meta { color: var(--paper-2); opacity: .7; }
+  .picker .card-tag { font-size: .7rem; letter-spacing: .15em; text-transform: uppercase; font-weight: 700; color: var(--gold); }
+  .picker .card-title { font-family: 'Fraunces', serif; font-size: 1.15rem; margin: .3rem 0 .4rem; line-height: 1.2; }
+  .picker .card-meta { font-size: .8rem; color: var(--ink-soft); }
+
+  /* Exercise body */
+  .ex-wrap { display: none; }
+  .ex-wrap.active { display: block; }
+  .ex-header { padding: 1.5rem 0 1rem; border-top: 2px solid var(--ink); border-bottom: 1px solid var(--rule); margin-bottom: 1.5rem; }
+  .ex-title { font-size: 2rem; margin-bottom: .3rem; }
+  .ex-sub { font-size: .82rem; color: var(--ink-faint); letter-spacing: .15em; text-transform: uppercase; font-weight: 600; }
+
+  .panel {
+    background: var(--paper-2); border: 1px solid var(--rule);
+    padding: 1.5rem 1.7rem; border-radius: 4px; margin-bottom: 1.8rem;
+    box-shadow: var(--shadow);
+  }
+  .panel.statement { background: linear-gradient(135deg, var(--paper-2), #f3eadc); border-left: 3px solid var(--gold); }
+
+  /* Tables */
+  .tbl-wrap { overflow-x: auto; margin: 1rem -.5rem; padding: 0 .5rem; }
+  table.acc {
+    width: 100%; border-collapse: collapse;
+    font-family: 'JetBrains Mono', monospace; font-size: .88rem;
+    background: var(--paper);
+  }
+  table.acc th, table.acc td {
+    padding: .5rem .7rem; text-align: right; border-bottom: 1px solid var(--rule);
+    white-space: nowrap;
+  }
+  table.acc th { background: var(--ink); color: var(--paper); font-weight: 500; letter-spacing: .05em; text-transform: uppercase; font-size: .72rem; }
+  table.acc th:first-child, table.acc td:first-child { text-align: left; font-family: 'Manrope', sans-serif; font-weight: 500; }
+  table.acc tr.subtotal td { background: var(--paper-2); font-weight: 600; border-top: 1px solid var(--ink); }
+  table.acc tr.total td { background: var(--paper-2); font-weight: 700; border-top: 2px double var(--ink); border-bottom: 2px double var(--ink); }
+  table.acc tr.section-row td { background: var(--paper-2); color: var(--ink-soft); font-style: italic; font-weight: 600; text-align: left; font-family: 'Manrope', sans-serif; letter-spacing: .03em; }
+  table.acc input.cell {
+    width: 100%; min-width: 80px; max-width: 110px;
+    border: 1px solid transparent; background: rgba(255,255,255,.5);
+    padding: .25rem .4rem; text-align: right;
+    font-family: 'JetBrains Mono', monospace; font-size: .88rem; color: var(--ink);
+    border-radius: 2px; outline: none;
+    transition: all .15s ease;
+  }
+  table.acc input.cell:focus { border-color: var(--green); background: white; }
+  table.acc input.cell.correct { background: var(--green-bg); border-color: var(--green); color: var(--green); font-weight: 600; }
+  table.acc input.cell.incorrect { background: var(--red-bg); border-color: var(--red); color: var(--red); }
+  table.acc input.cell.given { background: transparent; color: var(--ink-soft); font-style: italic; }
+  table.acc td .expected { display: block; font-size: .72rem; color: var(--red); margin-top: 2px; font-style: italic; }
+
+  table.acc.compact th, table.acc.compact td { padding: .35rem .5rem; font-size: .82rem; }
+
+  /* Buttons */
+  .btn-row { display: flex; flex-wrap: wrap; gap: .6rem; margin-top: 1.2rem; padding-top: 1.2rem; border-top: 1px dashed var(--rule); }
+  button.btn {
+    border: 1px solid var(--ink); background: var(--paper); color: var(--ink);
+    padding: .55rem 1.1rem; font-family: inherit; font-weight: 600; font-size: .85rem;
+    letter-spacing: .03em; cursor: pointer; border-radius: 2px;
+    transition: all .15s ease; display: inline-flex; align-items: center; gap: .4rem;
+  }
+  button.btn:hover { background: var(--ink); color: var(--paper); }
+  button.btn.primary { background: var(--green); color: var(--paper); border-color: var(--green); }
+  button.btn.primary:hover { background: #1d4530; }
+  button.btn.gold { background: var(--gold); color: white; border-color: var(--gold); }
+  button.btn.gold:hover { background: #9d7a30; }
+  button.btn.ghost { background: transparent; }
+
+  /* Step-by-step */
+  .steps {
+    background: #fdfbf4;
+    border: 1px solid var(--rule); border-left: 3px solid var(--green);
+    padding: 1.5rem 1.7rem; margin: 1.5rem 0; border-radius: 2px;
+    display: none;
+  }
+  .steps.show { display: block; }
+  .steps h3 { font-family: 'Fraunces', serif; color: var(--green); margin-top: 0; }
+  .steps .step { padding: 1rem 0; border-bottom: 1px dashed var(--rule); }
+  .steps .step:last-child { border-bottom: none; }
+  .steps .step-num {
+    display: inline-block; font-family: 'Fraunces', serif; font-style: italic;
+    color: var(--gold); font-size: 1.1rem; margin-right: .5rem;
+  }
+  .steps .step-title { font-weight: 700; font-size: 1rem; display: inline; }
+  .steps .step-body { margin-top: .5rem; color: var(--ink-soft); font-size: .92rem; }
+  .steps .formula {
+    font-family: 'JetBrains Mono', monospace; font-size: .85rem;
+    background: var(--paper-2); padding: .6rem .9rem; border-radius: 2px;
+    margin: .5rem 0; display: block; border-left: 2px solid var(--gold);
+  }
+  .steps strong { color: var(--ink); }
+
+  /* Score badge */
+  .score-badge {
+    display: inline-flex; align-items: center; gap: .5rem;
+    background: var(--paper-2); border: 1px solid var(--rule);
+    padding: .35rem .8rem; border-radius: 999px; font-size: .85rem; font-weight: 600;
+    margin-left: auto;
+  }
+  .score-badge .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--ink-faint); }
+  .score-badge.good .dot { background: var(--green); }
+  .score-badge.bad .dot { background: var(--red); }
+
+  /* Quiz */
+  .quiz-intro { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: .8rem; margin: 1.2rem 0 2rem; }
+  .cpc-chip {
+    border: 1px solid var(--rule); background: var(--paper-2);
+    padding: .9rem 1rem; border-radius: 4px;
+    transition: all .2s ease; cursor: pointer;
+  }
+  .cpc-chip.active { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+  .cpc-chip .num-big { font-family: 'Fraunces', serif; font-size: 1.5rem; line-height: 1; }
+  .cpc-chip .lbl { font-size: .72rem; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-faint); margin-top: .25rem; font-weight: 600; }
+  .cpc-chip.active .lbl { color: var(--gold-soft); }
+  .cpc-chip .ttl { font-family: 'Fraunces', serif; font-size: 1rem; margin-top: .35rem; line-height: 1.2; }
+
+  .quiz-q {
+    background: var(--paper-2); border: 1px solid var(--rule);
+    padding: 1.4rem 1.6rem; border-radius: 4px; margin-bottom: 1rem;
+  }
+  .quiz-q .q-num { font-family: 'Fraunces', serif; font-style: italic; color: var(--gold); font-size: 1.1rem; margin-right: .4rem; }
+  .quiz-q .q-text { font-weight: 600; font-size: 1.02rem; line-height: 1.4; }
+  .quiz-q .q-cpc { font-size: .7rem; letter-spacing: .15em; text-transform: uppercase; color: var(--ink-faint); font-weight: 700; margin-bottom: .6rem; }
+  .quiz-q .options { margin-top: 1rem; display: flex; flex-direction: column; gap: .5rem; }
+  .quiz-q .opt {
+    text-align: left; padding: .7rem 1rem; border: 1px solid var(--rule);
+    background: var(--paper); border-radius: 2px; cursor: pointer;
+    font-family: inherit; font-size: .92rem; transition: all .15s ease;
+    display: flex; gap: .8rem; align-items: flex-start;
+  }
+  .quiz-q .opt:hover:not(.locked) { border-color: var(--ink); }
+  .quiz-q .opt .letter { font-family: 'Fraunces', serif; font-style: italic; color: var(--gold); flex-shrink: 0; font-weight: 600; }
+  .quiz-q .opt.correct { background: var(--green-bg); border-color: var(--green); }
+  .quiz-q .opt.correct .letter { color: var(--green); }
+  .quiz-q .opt.incorrect { background: var(--red-bg); border-color: var(--red); }
+  .quiz-q .opt.incorrect .letter { color: var(--red); }
+  .quiz-q .opt.locked { cursor: default; }
+  .quiz-q .explanation {
+    margin-top: 1rem; padding: .9rem 1.1rem; background: #fdfbf4;
+    border-left: 2px solid var(--green); border-radius: 2px;
+    font-size: .9rem; color: var(--ink-soft); display: none;
+  }
+  .quiz-q .explanation.show { display: block; }
+  .quiz-q .explanation strong { color: var(--green); }
+
+  .footer-note {
+    margin-top: 4rem; padding-top: 2rem; border-top: 1px solid var(--rule);
+    font-size: .85rem; color: var(--ink-faint); text-align: center;
+  }
+  .footer-note em { font-family: 'Fraunces', serif; }
+
+  /* Hidden helper */
+  .hidden { display: none !important; }
+  .row-flex { display: flex; flex-wrap: wrap; gap: 2rem; }
+  .row-flex > * { flex: 1 1 320px; }
+
+  /* Tip box for given values */
+  .given-data {
+    background: rgba(184,146,63,.08); border: 1px dashed var(--gold);
+    padding: 1rem 1.2rem; border-radius: 2px; margin: 1rem 0;
+    font-size: .9rem;
+  }
+  .given-data h4 { margin-top: 0; color: var(--gold); }
+  .given-data ul { list-style: none; padding: 0; }
+  .given-data li { padding: .25rem 0; border-bottom: 1px dotted var(--rule); display: flex; justify-content: space-between; gap: 1rem; }
+  .given-data li:last-child { border-bottom: none; }
+  .given-data li strong { font-family: 'JetBrains Mono', monospace; color: var(--ink); font-weight: 600; }
+
+  /* Tabs inside exercise */
+  .sub-tabs { display: flex; gap: 0; border-bottom: 1px solid var(--rule); margin-bottom: 1rem; }
+  .sub-tabs button {
+    background: transparent; border: 0; padding: .7rem 1.2rem;
+    font-family: inherit; font-size: .88rem; font-weight: 600;
+    cursor: pointer; color: var(--ink-faint); border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+  }
+  .sub-tabs button.active { color: var(--ink); border-bottom-color: var(--green); }
+  .sub-tab-content { display: none; }
+  .sub-tab-content.active { display: block; }
+
+  details summary { cursor: pointer; font-weight: 600; padding: .4rem 0; }
+  details[open] summary { color: var(--green); }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="top-inner">
+    <div class="brand">
+      <span class="glyph">∮</span>
+      <div>
+        <div>Laboratório de Arrendamento</div>
+        <div class="meta">Contabilidade Financeira II · FEA-RP</div>
+      </div>
+    </div>
+    <nav class="tabs">
+      <button class="tab-btn active" data-tab="exercicios">Exercícios</button>
+      <button class="tab-btn" data-tab="quiz">Quiz CPCs</button>
+      <button class="tab-btn" data-tab="referencia">Referência</button>
+    </nav>
+  </div>
+</header>
+
+<main>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div>
+      <div class="kicker">Prática · Correção · Passo a passo</div>
+      <h1>Aprenda <em>arrendamento</em> com tabelas que você preenche e o gabarito te corrige.</h1>
+      <p class="lead">Cinco variações no estilo da sua professora — desde a tabela financeira simples até BP, DRE e DFC anuais com comparação arrendamento <em>vs</em> aluguel. Mais um quiz com os CPCs 06, 28, 46, 47 e 01.</p>
+    </div>
+    <div class="stats">
+      <div class="stat"><div class="num-big">5</div><div class="label">Variações práticas</div></div>
+      <div class="stat"><div class="num-big">25+</div><div class="label">Questões de quiz</div></div>
+      <div class="stat"><div class="num-big">5</div><div class="label">CPCs cobertos</div></div>
+      <div class="stat"><div class="num-big">∞</div><div class="label">Tentativas</div></div>
+    </div>
+  </section>
+
+  <!-- ===== EXERCÍCIOS ===== -->
+  <section id="tab-exercicios" class="tab-content">
+    <div class="section-label"><span class="roman">I</span> Exercícios de arrendamento</div>
+    <h2>Escolha uma variação e preencha as tabelas</h2>
+    <p style="color:var(--ink-soft); max-width:48rem;">Comece pela <strong>Variação 1</strong> (estilo Exercício 1 — Cia RESIDE) para fixar a tabela financeira e a depreciação. As demais já trazem BP, DRE e DFC completos com comparação arrendamento vs aluguel.</p>
+
+    <div class="picker" id="picker"></div>
+
+    <div id="exercises-container"></div>
+  </section>
+
+  <!-- ===== QUIZ ===== -->
+  <section id="tab-quiz" class="tab-content hidden">
+    <div class="section-label"><span class="roman">II</span> Quiz dos pronunciamentos</div>
+    <h2>Teste seu domínio dos CPCs</h2>
+    <p style="color:var(--ink-soft); max-width:48rem;">Selecione um CPC abaixo. Cada questão tem explicação imediata baseada no texto do pronunciamento.</p>
+
+    <div class="quiz-intro" id="cpc-picker"></div>
+    <div id="quiz-container"></div>
+  </section>
+
+  <!-- ===== REFERÊNCIA ===== -->
+  <section id="tab-referencia" class="tab-content hidden">
+    <div class="section-label"><span class="roman">III</span> Referência rápida</div>
+    <h2>Cola de fórmulas e definições</h2>
+    <div class="row-flex">
+      <div class="panel">
+        <h3>Arrendamento (CPC 06 R2)</h3>
+        <p><strong>Reconhecimento inicial pelo arrendatário:</strong></p>
+        <span class="formula">Passivo = VP das contraprestações futuras descontadas pela taxa implícita (ou incremental)</span>
+        <span class="formula">Direito de uso = Passivo + pagamentos antecipados + custos diretos − incentivos recebidos</span>
+        <p><strong>Mensuração subsequente:</strong></p>
+        <ul style="padding-left:1.2rem; color:var(--ink-soft); font-size:.92rem;">
+          <li>Passivo: método do custo amortizado (juros sobre saldo)</li>
+          <li>Ativo: depreciação linear pela vida útil ou pelo prazo do contrato (o menor)</li>
+        </ul>
+        <p><strong>DRE:</strong> Despesa de depreciação + Despesa financeira (juros)<br>
+        <strong>DFC:</strong> Pgto principal vai em <em>financiamento</em>; juros podem ir em operações ou financiamento.</p>
+      </div>
+      <div class="panel">
+        <h3>Atalho da TIR mensal</h3>
+        <p>A taxa de desconto é a <strong>TIR do fluxo</strong>: VP dos pagamentos = valor à vista do bem.</p>
+        <span class="formula">VP = Σ Pgto_t / (1+i)^t = Valor à vista</span>
+        <p>No caso clássico do PDF (10.000 = 24×500 + 120 final), a TIR mensal é <strong>1,58440%</strong>.</p>
+        <h4>Tabela de amortização — passo a passo</h4>
+        <ol style="padding-left:1.2rem; color:var(--ink-soft); font-size:.92rem;">
+          <li>Saldo₀ = valor do bem</li>
+          <li>Juros_t = Saldo_{t-1} × i</li>
+          <li>Amort_t = Pgto_t − Juros_t</li>
+          <li>Saldo_t = Saldo_{t-1} − Amort_t</li>
+        </ol>
+      </div>
+      <div class="panel">
+        <h3>Outros pronunciamentos</h3>
+        <details><summary>CPC 46 — Valor Justo</summary>
+          <p style="font-size:.9rem; color:var(--ink-soft); margin-top:.5rem;">Preço que seria recebido pela venda de um ativo (ou pago pela transferência de um passivo) em uma transação <em>ordenada</em> entre participantes do mercado, na <strong>data da mensuração</strong>. Hierarquia em 3 níveis. Ativos não financeiros: maior e melhor uso.</p>
+        </details>
+        <details><summary>CPC 28 — Propriedade para Investimento</summary>
+          <p style="font-size:.9rem; color:var(--ink-soft); margin-top:.5rem;">Imóvel mantido para auferir aluguel, valorização do capital, ou ambos — <strong>não</strong> para uso na produção/administração nem para venda no curso normal. Mensuração subsequente: custo OU valor justo (escolha de política).</p>
+        </details>
+        <details><summary>CPC 47 — Receita de Contrato com Cliente</summary>
+          <p style="font-size:.9rem; color:var(--ink-soft); margin-top:.5rem;">Modelo de 5 etapas: (1) identificar o contrato; (2) identificar obrigações de performance; (3) determinar preço da transação; (4) alocar preço às obrigações; (5) reconhecer receita ao satisfazer cada obrigação.</p>
+        </details>
+        <details><summary>CPC 01 — Redução ao Valor Recuperável</summary>
+          <p style="font-size:.9rem; color:var(--ink-soft); margin-top:.5rem;">Valor recuperável = <strong>maior</strong> entre valor justo líquido de despesas de venda e valor em uso. Perda = Valor contábil − Valor recuperável (se positiva). Reversão permitida (exceto goodwill).</p>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <div class="footer-note">
+    <em>Feito sob medida para a disciplina de Contabilidade Financeira II.</em><br>
+    Os cálculos rodam direto no seu navegador — nenhum dado sai do dispositivo.
+  </div>
+
+</main>
+
+<script src="app.js"></script>
+</body>
+</html>
